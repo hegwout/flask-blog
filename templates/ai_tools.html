@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold">AI Tools Directory</h1>
+        <p class="lead text-muted">Discover and explore the most powerful AI tools across different categories</p>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3 mb-md-0">
+            <div class="input-group">
+                <span class="input-group-text bg-white">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Search AI tools...">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="btn-group w-100" role="group">
+                <button type="button" class="btn btn-outline-primary active" data-category="all">All</button>
+                <button type="button" class="btn btn-outline-primary" data-category="Language">Language</button>
+                <button type="button" class="btn btn-outline-primary" data-category="Image">Image</button>
+                <button type="button" class="btn btn-outline-primary" data-category="Video">Video</button>
+                <button type="button" class="btn btn-outline-primary" data-category="Audio">Audio</button>
+                <button type="button" class="btn btn-outline-primary" data-category="Productivity">Productivity</button>
+                <button type="button" class="btn btn-outline-primary" data-category="Development">Development</button>
+                <button type="button" class="btn btn-outline-primary" data-category="Marketing">Marketing</button>
+                <button type="button" class="btn btn-outline-primary" data-category="Research">Research</button>
+                <button type="button" class="btn btn-outline-primary" data-category="Education">Education</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sort Options -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-secondary active" data-sort="popularity">Most Popular</button>
+                <button type="button" class="btn btn-outline-secondary" data-sort="name">Name</button>
+                <button type="button" class="btn btn-outline-secondary" data-sort="category">Category</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tools Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="toolsGrid">
+        {% for tool in tools %}
+        <div class="col tool-card" data-category="{{ tool.category }}" data-popularity="{{ tool.popularity }}">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0">{{ tool.name }}</h5>
+                        <div class="popularity-stars">
+                            {% for i in range(tool.popularity) %}
+                            <i class="bi bi-star-fill text-warning"></i>
+                            {% endfor %}
+                            {% for i in range(5 - tool.popularity) %}
+                            <i class="bi bi-star text-warning"></i>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <span class="badge bg-primary mb-2">{{ tool.category }}</span>
+                    <p class="card-text">{{ tool.description }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-top-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ tool.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-box-arrow-up-right"></i> Visit Website
+                        </a>
+                        <button class="btn btn-outline-secondary btn-sm tool-info" data-bs-toggle="modal" data-bs-target="#toolModal" data-tool='{{ tool|tojson }}'>
+                            <i class="bi bi-info-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Tool Modal -->
+<div class="modal fade" id="toolModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="tool-details"></div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-primary" target="_blank">Visit Website</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryButtons = document.querySelectorAll('.btn-group .btn[data-category]');
+    const sortButtons = document.querySelectorAll('.btn-group .btn[data-sort]');
+    const toolCards = document.querySelectorAll('.tool-card');
+    const searchInput = document.getElementById('searchInput');
+    const toolsGrid = document.getElementById('toolsGrid');
+    const toolModal = document.getElementById('toolModal');
+    const toolInfoButtons = document.querySelectorAll('.tool-info');
+
+    // Category filtering
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            categoryButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            filterTools();
+        });
+    });
+
+    // Sorting
+    sortButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            sortButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            sortTools(this.dataset.sort);
+        });
+    });
+
+    // Search functionality
+    searchInput.addEventListener('input', filterTools);
+
+    // Tool info modal
+    toolInfoButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const tool = JSON.parse(this.dataset.tool);
+            const modal = document.getElementById('toolModal');
+            modal.querySelector('.modal-title').textContent = tool.name;
+            modal.querySelector('.tool-details').innerHTML = `
+                <p><strong>Category:</strong> ${tool.category}</p>
+                <p><strong>Description:</strong> ${tool.description}</p>
+                <p><strong>Popularity:</strong> ${'★'.repeat(tool.popularity)}${'☆'.repeat(5-tool.popularity)}</p>
+            `;
+            modal.querySelector('.modal-footer .btn-primary').href = tool.url;
+        });
+    });
+
+    function filterTools() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const activeCategory = document.querySelector('.btn-group .btn[data-category].active').dataset.category;
+
+        toolCards.forEach(card => {
+            const toolName = card.querySelector('.card-title').textContent.toLowerCase();
+            const toolDescription = card.querySelector('.card-text').textContent.toLowerCase();
+            const toolCategory = card.dataset.category;
+            const matchesSearch = toolName.includes(searchTerm) || toolDescription.includes(searchTerm);
+            const matchesCategory = activeCategory === 'all' || toolCategory === activeCategory;
+
+            card.style.display = matchesSearch && matchesCategory ? 'block' : 'none';
+        });
+    }
+
+    function sortTools(sortBy) {
+        const cards = Array.from(toolCards);
+        cards.sort((a, b) => {
+            if (sortBy === 'name') {
+                return a.querySelector('.card-title').textContent.localeCompare(b.querySelector('.card-title').textContent);
+            } else if (sortBy === 'category') {
+                return a.dataset.category.localeCompare(b.dataset.category);
+            } else if (sortBy === 'popularity') {
+                return b.dataset.popularity - a.dataset.popularity;
+            }
+        });
+
+        cards.forEach(card => toolsGrid.appendChild(card));
+    }
+
+    // Initial sort by popularity
+    sortTools('popularity');
+});
+</script>
+
+<style>
+.tool-card {
+    transition: all 0.3s ease;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+}
+
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5em 0.8em;
+}
+
+.btn-group {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.btn-group .btn {
+    border-radius: 20px !important;
+    margin: 0.25rem;
+}
+
+.popularity-stars {
+    font-size: 0.9rem;
+}
+
+.tool-info {
+    padding: 0.25rem 0.5rem;
+}
+
+.input-group {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.input-group-text {
+    border: none;
+}
+
+.form-control {
+    border: none;
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus {
+    box-shadow: none;
+}
+
+.modal-content {
+    border-radius: 15px;
+    border: none;
+}
+
+.modal-header {
+    border-bottom: none;
+    padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.modal-footer {
+    border-top: none;
+    padding: 0.5rem 1.5rem 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .btn-group {
+        justify-content: center;
+    }
+    
+    .btn-group .btn {
+        margin: 0.25rem;
+    }
+}
+</style>
+{% endblock %}
+{% endblock %} 

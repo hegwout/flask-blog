@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">AI Chat Assistant</h3>
+                </div>
+                <div class="card-body">
+                    <div id="chat-messages" class="mb-4" style="height: 400px; overflow-y: auto;">
+                        <div class="message bot-message mb-3">
+                            <div class="message-content p-3 bg-light rounded">
+                                Hello! I'm your AI assistant. How can I help you today?
+                            </div>
+                        </div>
+                    </div>
+                    <form id="chat-form" class="d-flex">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="text" id="message-input" class="form-control me-2" placeholder="Type your message..." required>
+                        <button type="submit" class="btn btn-primary">Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatForm = document.getElementById('chat-form');
+    const messageInput = document.getElementById('message-input');
+    const chatMessages = document.getElementById('chat-messages');
+
+    function addMessage(message, isBot = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isBot ? 'bot-message' : 'user-message'} mb-3`;
+        
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content p-3 rounded';
+        messageContent.style.backgroundColor = isBot ? '#f8f9fa' : '#007bff';
+        messageContent.style.color = isBot ? '#212529' : '#ffffff';
+        messageContent.style.maxWidth = '80%';
+        messageContent.style.marginLeft = isBot ? '0' : 'auto';
+        
+        messageContent.textContent = message;
+        messageDiv.appendChild(messageContent);
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        // Add user message
+        addMessage(message, false);
+        messageInput.value = '';
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: new URLSearchParams({
+                    'message': message,
+                    'csrf_token': '{{ csrf_token() }}'
+                })
+            });
+
+            const data = await response.json();
+            // Add bot response
+            addMessage(data.response, true);
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage('Sorry, there was an error processing your message.', true);
+        }
+    });
+});
+</script>
+
+<style>
+.message {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.user-message {
+    justify-content: flex-end;
+}
+
+.bot-message {
+    justify-content: flex-start;
+}
+
+.message-content {
+    border-radius: 1rem;
+    padding: 0.75rem 1rem;
+    max-width: 80%;
+}
+
+#chat-messages {
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    background-color: #ffffff;
+}
+</style>
+{% endblock %}
+{% endblock %} 

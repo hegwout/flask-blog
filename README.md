@@ -1,44 +1,74 @@
-# A Flask blog
+# Cursor Blog
 
-* A Github public repo https://github.com/hegwout/flask-blog, web blog for only one user.Frendly user interface
-* python framework flask, sqlite storage
-
-## User interface
-
-* user login, default user: admin, default password:admin
-* blue boostrap theme
-* A logo in the navication bar
-* A admin setting page: blog title, blog description, blog head image, navi bar setting, show the head image in home page
-* Custumized HTML embered footer, can use html, javascript
-* Copyright
+A modern blog platform built with Flask, featuring AI tools integration and chat functionality.
 
 ## Features
 
- * Support markdown
- * File upload and save to a foler "upload"
- * Rich text editor
- * Top 10 posts on the right of each page, and home page
+- User authentication and authorization
+- Blog post creation and management
+- Rich text editor with file upload support
+- AI tools directory with search and filtering
+- AI chat interface
+- Responsive design
+- File upload support
+- Admin settings panel
 
-## Support:
-* git init and fetch to my repo: https://github.com/hegwout/flask-blog
-* github ci/cd  can auto deploy latest main branch to my EC2 server
+## Tech Stack
 
-## Local debug commands
+- Python 3.x
+- Flask
+- SQLAlchemy
+- Flask-Login
+- Bootstrap 5
+- CKEditor
+- Gunicorn
+- Nginx
 
-To run and debug the Flask blog locally, use the following commands:
+## Installation
 
+1. Clone the repository:
 ```bash
-# Create and activate a virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Set environment variables and run the app
-export FLASK_APP=app.py
-export FLASK_ENV=development
-flask run
+git clone https://github.com/yourusername/cursor-blog.git
+cd cursor-blog
 ```
 
-You can now access the blog at [http://localhost:5000](http://localhost:5000).
+2. Create and activate virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+4. Initialize the database:
+```bash
+python app.py
+```
+
+5. Run the development server:
+```bash
+python app.py
+```
+
+The application will be available at `http://localhost:5000`
+
+## Deployment
+
+1. Update the `nginx.conf` with your domain and paths
+2. Run the deployment script:
+```bash
+./deploy.sh
+```
+
+## Configuration
+
+- Update `nginx.conf` with your domain name
+- Set environment variables in `.env` file
+- Configure Gunicorn settings in `gunicorn_config.py`
+
+## License
+
+MIT License

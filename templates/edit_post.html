@@ -2,24 +2,29 @@
 
 {% block content %}
 <div class="container">
-    <h2>Create New Post</h2>
+    <h2>Edit Post</h2>
     <form method="POST" enctype="multipart/form-data" id="postForm">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3">
             <label for="title" class="form-label">Title</label>
-            <input type="text" class="form-control" id="title" name="title" required>
+            <input type="text" class="form-control" id="title" name="title" value="{{ post.title }}" required>
         </div>
         <div class="mb-3">
             <label for="content" class="form-label">Content</label>
-            <textarea class="form-control" id="content" name="content" rows="10"></textarea>
+            <textarea class="form-control" id="content" name="content" rows="10">{{ post.content }}</textarea>
             <input type="hidden" name="content_required" id="content_required" required>
         </div>
         <div class="mb-3">
             <label for="image" class="form-label">Featured Image</label>
             <input type="file" class="form-control" id="image" name="image" accept="image/*">
+            {% if post.image %}
+            <div class="mt-2">
+                <p>Current image: {{ post.image }}</p>
+            </div>
+            {% endif %}
         </div>
         <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Create Post</button>
+            <button type="submit" class="btn btn-primary">Update Post</button>
             <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
