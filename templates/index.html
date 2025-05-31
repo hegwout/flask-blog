@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        {% for post in posts %}
+        <article class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">{{ post.title }}</h2>
+                <p class="card-text text-muted">
+                    Posted by {{ post.author.username }} on {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </p>
+                <div class="card-text">
+                    {{ post.content|markdown|safe }}
+                </div>
+            </div>
+        </article>
+        {% else %}
+        <div class="alert alert-info">
+            No posts yet. {% if current_user.is_authenticated %}<a href="{{ url_for('new_post') }}">Create one!</a>{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="top-posts">
+            <h3>Top Posts</h3>
+            <ul class="list-unstyled">
+                {% for post in top_posts %}
+                <li class="mb-2">
+                    <a href="#" class="text-decoration-none">{{ post.title }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %} 
